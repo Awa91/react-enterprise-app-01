@@ -1,2 +1,2 @@
 # Enterprise React Clean Architecture Application
-[![Build & Test CI/CD](https://github.com/Awa91/react-enterprise-app-01/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Awa91/react-enterprise-app-01/actions/workflows/ci-cd.yml)
+[![Build & Test CI/CD](https://github.com/Awa91/react-enterprise-app-01/actions/workflows/react_ci_cd.yml/badge.svg)](https://github.com/Awa91/react-enterprise-app-01/actions/workflows/react_ci_cd.yml)
