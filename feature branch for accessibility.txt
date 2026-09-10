@@ -741,7 +741,7 @@ export default App;
 # Commit and push
 git status
 git add .
-git commit -m "chore: CREATE accessibility setup, domain state, Zustand store, Vitest test suite, and the integrated App.tsx file."
+git commit -m "chore: feat(accessibility): add AccessibilityToolbar,write CSS rules, and Integrate with App.tsx."
 git push origin feature/accessibility
 
 
@@ -749,6 +749,26 @@ Open the Pull Request (PR)
 
 gh pr create --base main --head feature/accessibility --title "feat(accessibility): add AccessibilityToolbar,write CSS rules, and Integrate with App.tsx" --body "build a dedicated Accessibility Toolbar component for high contrast and font size toggles. write CSS rules for .high-contrast and .reduce-motion classes using tailwind css v4.And Integrate AccessibilityToolbar component with App.tsx."
 
+
+
+
+
+
+
+
+A Pull Request for feature/accessibility into main has already been created. You don't need to make a new PR.
+Run this command to view the existing Pull Request directly in your web browser:
+
+Bash
+
+gh pr view --web
+
+
+If you want to update the existing PR's Title and DescriptionIf you want to update the PR to use the title and body you just drafted, run:
+
+Bash
+
+gh pr edit --title "feat(accessibility): add AccessibilityToolbar, Zustand store, and CSS classes" --body "Builds a dedicated Accessibility Toolbar component for high contrast and font size toggles. Includes CSS rules for .high-contrast and .reduce-motion classes using Tailwind CSS v4, integrated into App.tsx."
 
 
 
