@@ -1,5 +1,6 @@
 # Enterprise React Clean Architecture Application
 [![Build & Test CI/CD](https://github.com/Awa91/react-enterprise-app-01/actions/workflows/react_ci_cd.yml/badge.svg)](https://github.com/Awa91/react-enterprise-app-01/actions/workflows/react_ci_cd.yml)
+feature/accessibility
 
 
 An enterprise-grade, accessible, and localized "Contact Us" web application built for a Nigerian software development agency. Designed using strict **MVVM (Model-View-ViewModel) Clean Architecture** principles to separate business logic from UI rendering.
@@ -118,3 +119,4 @@ This project is open-source and available under the MIT License.
 ### How to apply this to your repo:
 
 Replace `YOUR_GITHUB_USERNAME` in the badge URL and clone instructions with your actual GitHub username, then commit and push to your feature branch:
+ main
