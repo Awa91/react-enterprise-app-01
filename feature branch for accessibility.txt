@@ -1,0 +1,358 @@
+Given: git status
+On branch feature/setup-ci-cd
+nothing to commit, working tree clean. Create a sample feature branch to work on accessibility
+
+
+
+
+Run these terminal commands to create and switch to a new feature branch for accessibility:
+
+Bash
+git checkout -b feature/accessibility
+Or using the newer git switch syntax:
+
+Bash
+git switch -c feature/accessibility
+This creates the branch feature/accessibility from your clean state on feature/setup-ci-cd and switches your workspace directly to it.
+
+
+
+TASK: 1 
+
+Here is the complete accessibility setup, domain state, Zustand store, Vitest test suite, and the integrated App.tsx file.
+
+
+npm install zustand
+
+
+
+1. src/features/accessibility/domain/Accessibility.ts
+TypeScript
+export interface AccessibilitySettings {
+  highContrast: boolean;
+  fontSizeMultiplier: number;
+  reduceMotion: boolean;
+}
+
+export type FontSizeMultiplier = 1 | 1.125 | 1.25 | 1.5;
+2. src/features/accessibility/presentation/useAccessibilityStore.ts
+TypeScript
+import { create } from 'zustand';
+import { AccessibilitySettings, FontSizeMultiplier } from '../domain/Accessibility';
+
+interface AccessibilityState extends AccessibilitySettings {
+  toggleHighContrast: () => void;
+  setFontSizeMultiplier: (multiplier: FontSizeMultiplier) => void;
+  toggleReduceMotion: () => void;
+  resetSettings: () => void;
+  applySettingsToDOM: () => void;
+}
+
+const DEFAULT_SETTINGS: AccessibilitySettings = {
+  highContrast: false,
+  fontSizeMultiplier: 1,
+  reduceMotion: false,
+};
+
+export const useAccessibilityStore = create<AccessibilityState>((set, get) => ({
+  ...DEFAULT_SETTINGS,
+
+  toggleHighContrast: () => {
+    set((state) => {
+      const nextHighContrast = !state.highContrast;
+      document.documentElement.classList.toggle('high-contrast', nextHighContrast);
+      return { highContrast: nextHighContrast };
+    });
+  },
+
+  setFontSizeMultiplier: (multiplier: FontSizeMultiplier) => {
+    set(() => {
+      document.documentElement.style.fontSize = `${multiplier * 100}%`;
+      return { fontSizeMultiplier: multiplier };
+    });
+  },
+
+  toggleReduceMotion: () => {
+    set((state) => {
+      const nextReduceMotion = !state.reduceMotion;
+      document.documentElement.classList.toggle('reduce-motion', nextReduceMotion);
+      return { reduceMotion: nextReduceMotion };
+    });
+  },
+
+  resetSettings: () => {
+    set(DEFAULT_SETTINGS);
+    document.documentElement.classList.remove('high-contrast', 'reduce-motion');
+    document.documentElement.style.fontSize = '100%';
+  },
+
+  applySettingsToDOM: () => {
+    const { highContrast, fontSizeMultiplier, reduceMotion } = get();
+    document.documentElement.classList.toggle('high-contrast', highContrast);
+    document.documentElement.classList.toggle('reduce-motion', reduceMotion);
+    document.documentElement.style.fontSize = `${fontSizeMultiplier * 100}%`;
+  },
+}));
+3. src/features/accessibility/tests/useAccessibilityStore.test.ts
+TypeScript
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useAccessibilityStore } from '../presentation/useAccessibilityStore';
+
+describe('useAccessibilityStore Unit Tests', () => {
+  beforeEach(() => {
+    useAccessibilityStore.getState().resetSettings();
+  });
+
+  it('initializes with default settings', () => {
+    const state = useAccessibilityStore.getState();
+    expect(state.highContrast).toBe(false);
+    expect(state.fontSizeMultiplier).toBe(1);
+    expect(state.reduceMotion).toBe(false);
+  });
+
+  it('toggles high contrast mode and updates DOM root element', () => {
+    useAccessibilityStore.getState().toggleHighContrast();
+
+    expect(useAccessibilityStore.getState().highContrast).toBe(true);
+    expect(document.documentElement.classList.contains('high-contrast')).toBe(true);
+
+    useAccessibilityStore.getState().toggleHighContrast();
+
+    expect(useAccessibilityStore.getState().highContrast).toBe(false);
+    expect(document.documentElement.classList.contains('high-contrast')).toBe(false);
+  });
+
+  it('updates font size multiplier and adjusts root element font size', () => {
+    useAccessibilityStore.getState().setFontSizeMultiplier(1.25);
+
+    expect(useAccessibilityStore.getState().fontSizeMultiplier).toBe(1.25);
+    expect(document.documentElement.style.fontSize).toBe('125%');
+  });
+
+  it('toggles reduce motion setting and applies DOM class', () => {
+    useAccessibilityStore.getState().toggleReduceMotion();
+
+    expect(useAccessibilityStore.getState().reduceMotion).toBe(true);
+    expect(document.documentElement.classList.contains('reduce-motion')).toBe(true);
+  });
+
+  it('resets settings to default and clears DOM properties', () => {
+    useAccessibilityStore.getState().toggleHighContrast();
+    useAccessibilityStore.getState().setFontSizeMultiplier(1.5);
+
+    useAccessibilityStore.getState().resetSettings();
+
+    const state = useAccessibilityStore.getState();
+    expect(state.highContrast).toBe(false);
+    expect(state.fontSizeMultiplier).toBe(1);
+    expect(document.documentElement.classList.contains('high-contrast')).toBe(false);
+    expect(document.documentElement.style.fontSize).toBe('100%');
+  });
+});
+4. Integrated src/App.tsx
+This updates your Vite boilerplate component to apply accessibility preferences on initialization and includes a UI controls bar.
+
+TypeScript
+import { useState, useEffect } from 'react';
+import heroImg from './assets/hero.svg';
+import reactLogo from './assets/react.svg';
+import viteLogo from './assets/vite.svg';
+import { useAccessibilityStore } from './features/accessibility/presentation/useAccessibilityStore';
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  // Accessibility Store Actions & State
+  const {
+    highContrast,
+    reduceMotion,
+    fontSizeMultiplier,
+    toggleHighContrast,
+    toggleReduceMotion,
+    setFontSizeMultiplier,
+    applySettingsToDOM,
+  } = useAccessibilityStore();
+
+  // Apply persisted DOM attributes on mount
+  useEffect(() => {
+    applySettingsToDOM();
+  }, [applySettingsToDOM]);
+
+  return (
+    <>
+      {/* Accessibility Control Toolbar */}
+      <header role="banner" style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
+        <nav aria-label="Accessibility Settings">
+          <fieldset style={{ display: 'flex', gap: '1rem', alignItems: 'center', border: 'none' }}>
+            <legend className="sr-only">Accessibility Controls</legend>
+
+            <button
+              type="button"
+              onClick={toggleHighContrast}
+              aria-pressed={highContrast}
+            >
+              {highContrast ? 'Disable High Contrast' : 'Enable High Contrast'}
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleReduceMotion}
+              aria-pressed={reduceMotion}
+            >
+              {reduceMotion ? 'Disable Reduce Motion' : 'Enable Reduce Motion'}
+            </button>
+
+            <label htmlFor="font-scale-select">Text Size:</label>
+            <select
+              id="font-scale-select"
+              value={fontSizeMultiplier}
+              onChange={(e) => setFontSizeMultiplier(Number(e.target.value) as 1 | 1.125 | 1.25 | 1.5)}
+            >
+              <option value={1}>100% (Default)</option>
+              <option value={1.125}>112.5%</option>
+              <option value={1.25}>125%</option>
+              <option value={1.5}>150%</option>
+            </select>
+          </fieldset>
+        </nav>
+      </header>
+
+      <main>
+        <section id="center">
+          <div className="hero">
+            <img src={heroImg} className="base" width="170" height="179" alt="" />
+            <img src={reactLogo} className="framework" alt="React logo" />
+            <img src={viteLogo} className="vite" alt="Vite logo" />
+          </div>
+          <div>
+            <h1>Get started</h1>
+            <p>
+              Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+            </p>
+          </div>
+          <button
+            type="button"
+            className="counter"
+            onClick={() => setCount((count) => count + 1)}
+          >
+            Count is {count}
+          </button>
+        </section>
+
+        <div className="ticks"></div>
+
+        <section id="next-steps">
+          <div id="docs">
+            <svg className="icon" role="presentation" aria-hidden="true">
+              <use href="/icons.svg#documentation-icon"></use>
+            </svg>
+            <h2>Documentation</h2>
+            <p>Your questions, answered</p>
+            <ul>
+              <li>
+                <a href="https://vite.dev/" target="_blank" rel="noreferrer">
+                  <img className="logo" src={viteLogo} alt="" />
+                  Explore Vite
+                </a>
+              </li>
+              <li>
+                <a href="https://react.dev/" target="_blank" rel="noreferrer">
+                  <img className="button-icon" src={reactLogo} alt="" />
+                  Learn more
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div id="social">
+            <svg className="icon" role="presentation" aria-hidden="true">
+              <use href="/icons.svg#social-icon"></use>
+            </svg>
+            <h2>Connect with us</h2>
+            <p>Join the Vite community</p>
+            <ul>
+              <li>
+                <a href="https://github.com/vitejs/vite" target="_blank" rel="noreferrer">
+                  <svg className="button-icon" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#github-icon"></use>
+                  </svg>
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a href="https://chat.vite.dev/" target="_blank" rel="noreferrer">
+                  <svg className="button-icon" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#discord-icon"></use>
+                  </svg>
+                  Discord
+                </a>
+              </li>
+              <li>
+                <a href="https://x.com/vite_js" target="_blank" rel="noreferrer">
+                  <svg className="button-icon" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#x-icon"></use>
+                  </svg>
+                  X.com
+                </a>
+              </li>
+              <li>
+                <a href="https://bsky.app/profile/vite.dev" target="_blank" rel="noreferrer">
+                  <svg className="button-icon" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#bluesky-icon"></use>
+                  </svg>
+                  Bluesky
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <div className="ticks"></div>
+        <section id="spacer"></section>
+      </main>
+    </>
+  );
+}
+
+export default App;
+
+
+
+
+# Commit and push
+git status
+git add .
+git commit -m "chore: CREATE accessibility setup, domain state, Zustand store, Vitest test suite, and the integrated App.tsx file."
+git push origin feature/accessibility
+
+
+Open the Pull Request (PR)
+
+On GitHub:
+
+Open your repository page in your browser.
+
+You will usually see a prompt banner at the top saying "feature/accessibility had recent pushes" with a Compare & pull request button. Click it.
+
+(Alternatively) Go to the Pull requests tab and click New pull request.
+
+Ensure base: main (or develop) is selected on the left, and compare: feature/accessibility is selected on the right.
+
+Enter a clear Title and Description detailing your changes.
+
+Click Create pull request.
+
+
+
+
+
+
+
+
+
+
+TASK:
+
+
+
+
+
