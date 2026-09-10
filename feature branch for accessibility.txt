@@ -342,8 +342,412 @@ Enter a clear Title and Description detailing your changes.
 Click Create pull request.
 
 
+Method 1: Manual MSI Installation (Recommended)
+Download the installer file directly in your browser:
+👉 gh_2.100.0_windows_amd64.msi
+https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_windows_amd64.msi
+
+Open your Downloads folder and double-click gh_2.100.0_windows_amd64.msi to run the standard setup wizard.
+
+Once completed, restart your terminal and verify:
+
+Bash
+gh --version
 
 
+
+gh auth login
+
+
+? Where do you use GitHub? GitHub.com                    
+? What is your preferred protocol for Git operations on this host? HTTPS                                          
+? Authenticate Git with your GitHub credentials? Yes     
+? How would you like to authenticate GitHub CLI? Login with a web browser                                         
+                                                         
+! First copy your one-time code: 9BB6-DD85               
+Press Enter to open https://github.com/login/device in your browser... 
+✓ Authentication complete.
+- gh config set -h github.com git_protocol htt
+✓ Configured git protocol
+✓ Logged in as Awa91
+
+
+gh pr create --base main --head feature/accessibility --title "feat(accessibility): add AccessibilityToolbar, Zustand store, and CSS classes" --body "Implements WCAG-compliant high contrast, reduce motion, and text scaling controls using Zustand and Tailwind CSS v4."
+
+
+
+
+
+
+
+TASK:build a dedicated Accessibility Toolbar component for high contrast and font size toggles. write CSS rules for .high-contrast and .reduce-motion classes using tailwind css v4.
+Integrate AccessibilityToolbar component with App.tsx
+
+
+
+Here is the dedicated WAI-ARIA compliant AccessibilityToolbar component along with the Tailwind CSS v4 directives for global accessibility classes.
+
+1. AccessibilityToolbar.tsx
+TypeScript
+import React from 'react';
+import { useAccessibilityStore } from '../viewmodels/useAccessibilityStore';
+import { FontSizeMultiplier } from '../domain/Accessibility';
+
+export const AccessibilityToolbar: React.FC = () => {
+  const {
+    highContrast,
+    reduceMotion,
+    fontSizeMultiplier,
+    toggleHighContrast,
+    toggleReduceMotion,
+    setFontSizeMultiplier,
+    resetSettings,
+  } = useAccessibilityStore();
+
+  const fontSizes: { label: string; value: FontSizeMultiplier }[] = [
+    { label: '100%', value: 1 },
+    { label: '112.5%', value: 1.125 },
+    { label: '125%', value: 1.25 },
+    { label: '150%', value: 1.5 },
+  ];
+
+  return (
+    <aside
+      aria-label="Accessibility Settings"
+      aria-describedby="a11y-toolbar-desc"
+      className="bg-slate-100 text-slate-900 border-b border-slate-300 p-3 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-800"
+    >
+      <p id="a11y-toolbar-desc" className="sr-only">
+        Use these controls to adjust high contrast mode, reduce animations, and resize application text.
+      </p>
+
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-sm font-medium">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="font-semibold tracking-wide uppercase text-xs text-slate-600 dark:text-slate-400">
+            Accessibility Options
+          </span>
+
+          {/* High Contrast Toggle */}
+          <button
+            type="button"
+            onClick={toggleHighContrast}
+            aria-pressed={highContrast}
+            className={`px-3 py-1.5 rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+              highContrast
+                ? 'bg-black text-yellow-300 border-yellow-300 font-bold'
+                : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-800 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200'
+            }`}
+          >
+            {highContrast ? 'High Contrast: On' : 'High Contrast: Off'}
+          </button>
+
+          {/* Reduce Motion Toggle */}
+          <button
+            type="button"
+            onClick={toggleReduceMotion}
+            aria-pressed={reduceMotion}
+            className={`px-3 py-1.5 rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+              reduceMotion
+                ? 'bg-blue-700 text-white border-blue-800 font-bold'
+                : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-800 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200'
+            }`}
+          >
+            {reduceMotion ? 'Reduce Motion: On' : 'Reduce Motion: Off'}
+          </button>
+
+          {/* Font Scaling Options */}
+          <div className="flex items-center gap-1.5 border-l border-slate-300 pl-3 dark:border-slate-700" role="radiogroup" aria-label="Text Scaling">
+            <span id="font-scale-label" className="text-xs text-slate-600 dark:text-slate-400 mr-1">
+              Text Size:
+            </span>
+            {fontSizes.map(({ label, value }) => {
+              const isSelected = fontSizeMultiplier === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  onClick={() => setFontSizeMultiplier(value)}
+                  className={`px-2.5 py-1 text-xs rounded border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                    isSelected
+                      ? 'bg-blue-600 text-white border-blue-600 font-bold'
+                      : 'bg-white border-slate-300 hover:bg-slate-50 text-slate-800 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Reset Settings Action */}
+        <button
+          type="button"
+          onClick={resetSettings}
+          className="text-xs underline underline-offset-4 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+          Reset Defaults
+        </button>
+      </div>
+    </aside>
+  );
+};
+2. Global CSS Directives (src/index.css)
+Tailwind CSS v4 uses standard CSS syntax with @import "tailwindcss"; and @utility directives.
+
+CSS
+@import "tailwindcss";
+
+/* Ensure fluid text resizing driven by document root font-size */
+html {
+  transition: font-size 0.15s ease-in-out;
+}
+
+/* WAI-ARIA Screen Reader Only Helper Utility */
+@utility sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* High Contrast Global Override Protocol */
+html.high-contrast {
+  filter: contrast(150%);
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.high-contrast * {
+  background-color: transparent !important;
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html.high-contrast button,
+html.high-contrast a,
+html.high-contrast input,
+html.high-contrast select {
+  outline: 2px solid #ffff00 !important;
+  outline-offset: 2px !important;
+  color: #ffff00 !important;
+}
+
+html.high-contrast a:hover,
+html.high-contrast button:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Motion Suppression Protocol */
+html.reduce-motion,
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here is the complete App.tsx file updated to integrate the AccessibilityToolbar component along with your application layout and counter functionality.
+
+TypeScript
+import { useState, useEffect } from 'react';
+import heroImg from './assets/hero.svg';
+import reactLogo from './assets/react.svg';
+import viteLogo from './assets/vite.svg';
+
+// Feature Components & Stores
+import { AccessibilityToolbar } from './features/accessibility/presentation/components/AccessibilityToolbar';
+import { useAccessibilityStore } from './features/accessibility/presentation/useAccessibilityStore';
+
+function App() {
+  const [count, setCount] = useState(0);
+  const applySettingsToDOM = useAccessibilityStore((state) => state.applySettingsToDOM);
+
+  // Re-apply persisted settings to DOM root on initial load
+  useEffect(() => {
+    applySettingsToDOM();
+  }, [applySettingsToDOM]);
+
+  return (
+    <div className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      {/* Top Accessibility Settings Bar */}
+      <AccessibilityToolbar />
+
+      {/* Main Content Layout */}
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-12">
+        <section id="center" className="flex flex-col items-center text-center space-y-6">
+          <div className="hero flex items-center justify-center gap-4">
+            <img src={heroImg} className="base" width="170" height="179" alt="" />
+            <img src={reactLogo} className="framework h-16 w-16" alt="React logo" />
+            <img src={viteLogo} className="vite h-16 w-16" alt="Vite logo" />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">Get started</h1>
+            <p className="text-slate-600 dark:text-slate-400">
+              Edit <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">src/App.tsx</code> and save to test <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">HMR</code>
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="counter px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors"
+            onClick={() => setCount((count) => count + 1)}
+          >
+            Count is {count}
+          </button>
+        </section>
+
+        <hr className="border-slate-200 dark:border-slate-800" />
+
+        <section id="next-steps" className="grid md:grid-cols-2 gap-8">
+          {/* Documentation Section */}
+          <div id="docs" className="space-y-4 p-6 border border-slate-200 dark:border-slate-800 rounded-xl">
+            <div className="flex items-center gap-2">
+              <svg className="icon w-6 h-6 text-blue-600" role="presentation" aria-hidden="true">
+                <use href="/icons.svg#documentation-icon"></use>
+              </svg>
+              <h2 className="text-xl font-bold">Documentation</h2>
+            </div>
+            <p className="text-slate-600 dark:text-slate-400">Your questions, answered</p>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="https://vite.dev/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <img className="logo w-4 h-4" src={viteLogo} alt="" />
+                  Explore Vite
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://react.dev/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <img className="button-icon w-4 h-4" src={reactLogo} alt="" />
+                  Learn more
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Social Links Section */}
+          <div id="social" className="space-y-4 p-6 border border-slate-200 dark:border-slate-800 rounded-xl">
+            <div className="flex items-center gap-2">
+              <svg className="icon w-6 h-6 text-blue-600" role="presentation" aria-hidden="true">
+                <use href="/icons.svg#social-icon"></use>
+              </svg>
+              <h2 className="text-xl font-bold">Connect with us</h2>
+            </div>
+            <p className="text-slate-600 dark:text-slate-400">Join the Vite community</p>
+            <ul className="grid grid-cols-2 gap-2">
+              <li>
+                <a
+                  href="https://github.com/vitejs/vite"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <svg className="button-icon w-4 h-4" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#github-icon"></use>
+                  </svg>
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://chat.vite.dev/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <svg className="button-icon w-4 h-4" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#discord-icon"></use>
+                  </svg>
+                  Discord
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://x.com/vite_js"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <svg className="button-icon w-4 h-4" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#x-icon"></use>
+                  </svg>
+                  X.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://bsky.app/profile/vite.dev"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <svg className="button-icon w-4 h-4" role="presentation" aria-hidden="true">
+                    <use href="/icons.svg#bluesky-icon"></use>
+                  </svg>
+                  Bluesky
+                </a>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+
+# Commit and push
+git status
+git add .
+git commit -m "chore: CREATE accessibility setup, domain state, Zustand store, Vitest test suite, and the integrated App.tsx file."
+git push origin feature/accessibility
+
+
+Open the Pull Request (PR)
+
+gh pr create --base main --head feature/accessibility --title "feat(accessibility): add AccessibilityToolbar,write CSS rules, and Integrate with App.tsx" --body "build a dedicated Accessibility Toolbar component for high contrast and font size toggles. write CSS rules for .high-contrast and .reduce-motion classes using tailwind css v4.And Integrate AccessibilityToolbar component with App.tsx."
 
 
 

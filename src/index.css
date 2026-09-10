@@ -1,1 +1,63 @@
 @import "tailwindcss";
+
+
+
+/* Ensure fluid text resizing driven by document root font-size */
+html {
+  transition: font-size 0.15s ease-in-out;
+}
+
+/* WAI-ARIA Screen Reader Only Helper Utility */
+@utility sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* High Contrast Global Override Protocol */
+html.high-contrast {
+  filter: contrast(150%);
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.high-contrast * {
+  background-color: transparent !important;
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+html.high-contrast button,
+html.high-contrast a,
+html.high-contrast input,
+html.high-contrast select {
+  outline: 2px solid #ffff00 !important;
+  outline-offset: 2px !important;
+  color: #ffff00 !important;
+}
+
+html.high-contrast a:hover,
+html.high-contrast button:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Motion Suppression Protocol */
+html.reduce-motion,
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+
